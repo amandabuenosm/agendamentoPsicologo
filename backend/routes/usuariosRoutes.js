@@ -1,0 +1,1 @@
+// função de direcionamento de rotas para usuários

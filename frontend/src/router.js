@@ -1,0 +1,1 @@
+// importação de rotas do frontend para cada página

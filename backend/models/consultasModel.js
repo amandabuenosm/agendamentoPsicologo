@@ -1,0 +1,1 @@
+// funções CRUD de consultas com o banco de dados

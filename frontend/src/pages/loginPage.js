@@ -1,0 +1,1 @@
+// funções de autenticação/cadastro de novos usuários, sejam eles pacientes ou psicólogos 
