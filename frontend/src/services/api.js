@@ -1,1 +1,0 @@
-// instância do axios e da requisição da aplicação
