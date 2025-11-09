@@ -1,18 +1,33 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-
+const sequelize = require('./config/database');
 const rotaPsicologos = require('./routes/psicologosRoutes');
-const rotaPacientes = require('./routes/pacientesRoutes');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/psicologos', rotaPsicologos);
-app.use('/pacientes', rotaPacientes);
+app.use('/api/psicologos', rotaPsicologos);
+
+const connectDB = async () => { // conectar ao banco de dados
+  try {
+    await sequelize.authenticate();
+    console.log('✅ Conectado ao MySQL com sucesso!');
+    await sequelize.sync({ force: false });
+    console.log('✅ Tabelas sincronizadas!');
+  } catch (error) {
+    console.error('❌ Erro de conexão com o banco de dados:', error);
+  }
+};
+connectDB();
+
+app.use((error, req, res, next) => { // log de erros de servidor
+  console.error(error);
+  res.status(500).json({ error: 'Erro interno do servidor' });
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
+    console.log(`📝 Documentação: http://localhost:${PORT}`);
 });
