@@ -2,11 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
 const rotaPsicologos = require('./routes/psicologosRoutes');
+const rotaPacientes = require('./routes/pacientesRoutes');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/pacientes', rotaPacientes);
 app.use('/api/psicologos', rotaPsicologos);
 
 const connectDB = async () => { // conectar ao banco de dados
