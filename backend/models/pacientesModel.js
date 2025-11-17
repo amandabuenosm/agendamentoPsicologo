@@ -1,24 +1,62 @@
-const database = require('../config/database');
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const bcrypt = require('bcrypt');
 
-const crudPacientes = {
-
-    mostrarPacientes: (callback) => {
-        database.query('SELECT * FROM pacientes', callback);
+const Paciente = sequelize.define('Paciente', {
+    id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true
     },
-
-    cadastrarPaciente: (novoPaciente, callback) => {
-        database.query('INSERT INTO pacientes SET ?', novoPaciente, callback);
+    nomePaciente: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
-
-    editarPaciente: (id, pacienteEdit, callback) => {
-        database.query('UPDATE pacientes SET ? WHERE id = ?', [pacienteEdit, id], callback);
+    cpfPaciente: {
+        type: DataTypes.STRING(14),
+        allowNull: false,
+        unique: true
     },
-
-    trocarstatus: (id, status, callback) => {
-        database.query('UPDATE pacientes SET status = ? WHERE id = ?', [status, id], callback);
+    emailPaciente: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: true
+        }
     },
-
-    deletarPaciente: (id, callback) => {
-        database.query('DELETE FROM pacientes WHERE id = ?', [id], callback);
+    telefonePaciente: {
+        type: DataTypes.STRING,
+        allowNull: false
     },
-}
+    idadePaciente: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    localizacaoPaciente: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    senhaPaciente: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+}, { hooks: { // criptografia de senhas
+        beforeCreate: async (paciente) => {
+            if (paciente.senhaPaciente) {
+                paciente.senhaPaciente = await bcrypt.hash(paciente.senhaPaciente, 10);
+            }
+        },
+        beforeUpdate: async (paciente) => {
+            if (paciente.changed('senha') && paciente.senhaPaciente) {
+                paciente.senhaPaciente = await bcrypt.hash(paciente.senhaPaciente, 10);
+            }
+        }
+    }   
+});
+
+Paciente.prototype.validarSenha = function(senhaPaciente) { // validar senha
+  return bcrypt.compare(senhaPaciente, this.senhaPaciente);
+};
+
+module.exports = Paciente;
