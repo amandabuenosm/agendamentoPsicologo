@@ -13,7 +13,7 @@ const VagaDisponivel = sequelize.define('VagaDisponivel', {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-            model: 'psicologos', // nome da tabela referenciada
+            model: Psicologo, // nome da tabela referenciada
             key: 'id'
         },
         onDelete: 'CASCADE',
@@ -23,17 +23,23 @@ const VagaDisponivel = sequelize.define('VagaDisponivel', {
     dataDisp: {
         type: DataTypes.DATEONLY,
         allowNull: false,
-        unique: 'horarioPorPsicologo' // garante que não haja duplicidade de horários para o mesmo psicólogo
+        unique: 'horarioPorPsicologo', // garante que não haja duplicidade de horários para o mesmo psicólogo
+        validate: {
+            isDate: true
+        }
     },
 
     horaDisp: {
         type: DataTypes.TIME,
         allowNull: false,
-        unique: 'horarioPorPsicologo'
+        unique: 'horarioPorPsicologo',
+        validate: {
+            is: /^(0\d|1\d|2[0-3]):([0-5]\d)$/ // valida Hora:Minuto
+        }
     },
 
     status: {
-        type: DataTypes.ENUM('livre', 'reservado', 'bloqueado'),
+        type: DataTypes.ENUM('livre', 'agendado'),
         defaultValue: 'livre',
         allowNull: false
     }
