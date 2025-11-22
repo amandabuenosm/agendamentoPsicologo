@@ -1,1 +1,0 @@
-// funções CRUD dos usuários

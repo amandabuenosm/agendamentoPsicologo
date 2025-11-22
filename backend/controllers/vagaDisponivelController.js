@@ -3,21 +3,23 @@ const { Op } = require('sequelize');
 
 exports.criarVaga = async (req, res) => { // criar nova vaga disponível
     try {
-        const { psicologoId, dataDisp, horaDisp } = req.body;
+        const psicologoId = req.headers['x-user-id'];
+        const { dataDisp, horaDisp } = req.body;
 
-        if (req.psicologo.id !== psicologoId) {
+        if (!psicologoId) {
             return res.status(403).json({
                 erro: 'Acesso negado',
-                mensagem: 'Você não tem permissão para criar vagas para este psicólogo.'
+                mensagem: 'ID do Psicólogo/Usuário não informado.'
             });
         }
 
         // não criar vaga em data passada
         const dataAtual = new Date().toISOString().split('T')[0];
         if (dataDisp < dataAtual) {
-            return res.status(400).json(response(false,
-                'A data informada já passou. Não é permitido criar vagas retroativas.'
-            ));
+            return res.status(400).json({
+                erro: 'Data inválida',
+                mensagem: 'A data informada já passou. Não é permitido criar vagas retroativas.'
+            });
         }
 
         const vagaExistente = await VagaDisponivel.findOne({
@@ -31,7 +33,7 @@ exports.criarVaga = async (req, res) => { // criar nova vaga disponível
             });
         }
 
-        const novaVaga = await VagaDisponivel.create(req.body);
+        const novaVaga = await VagaDisponivel.create({ psicologoId, dataDisp, horaDisp });
 
         res.status(201).json({
             message: 'Vaga criada com sucesso!',
@@ -61,7 +63,7 @@ exports.listarVagas = async (req, res) => { // listar todas as vagas disponívei
     }
 };
 
-exports.buscarPeloId = async (req, res) => { // buscar vaga disponível pelo ID
+exports.buscarPeloId = async (req, res) => { // buscar vaga disponível pelo ID da vaga
   try {
     const vagadisponivel = await VagaDisponivel.findByPk(req.params.id);
 
@@ -95,7 +97,7 @@ exports.buscarPeloPsicologoId = async (req, res) => { // buscar vaga disponível
         }
 
         res.json({
-            message: 'Vaga disponível encontrada com sucesso!',
+            message: 'Vaga disponível encontrada com sucesso para esse psicólogo!',
             dados: vagaPorPsicologo
         });
     } catch (error) {
@@ -105,6 +107,7 @@ exports.buscarPeloPsicologoId = async (req, res) => { // buscar vaga disponível
 
 exports.editarVagaPeloId = async (req, res) => { // atualizar vaga pelo ID
     try {
+        const psicologoId = req.headers['x-user-id'];
         const vaga = await VagaDisponivel.findByPk(req.params.id);
 
         if (!vaga) {
@@ -114,7 +117,14 @@ exports.editarVagaPeloId = async (req, res) => { // atualizar vaga pelo ID
             });
         }
 
-        if (req.usuario.id !== vaga.psicologoId) {
+        if (!psicologoId) {
+            return res.status(403).json({
+                erro: 'Acesso negado',
+                mensagem: 'ID do Psicólogo/Usuário não informado.'
+            });
+        }
+
+        if (psicologoId !== vaga.psicologoId) {
             return res.status(403).json({
                 erro: 'Acesso negado',
                 mensagem: 'Você não possui permissão para manipular vagas de outro psicólogo.'
@@ -123,18 +133,20 @@ exports.editarVagaPeloId = async (req, res) => { // atualizar vaga pelo ID
 
         // impedir edição de vaga agendada
         if (vaga.status === 'agendado') {
-            return res.status(400).json(response(false,
-                'Não é permitido alterar vagas que já possuem agendamento.'
-            ));
+            return res.status(400).json({
+                erro: 'Vaga agendada',
+                mensagem: 'Não é permitido alterar vagas que já possuem agendamento.'
+            });
         }
         
         const { dataDisp, horaDisp } = req.body;
 
         const dataAtual = new Date().toISOString().split('T')[0];
         if (dataDisp && dataDisp < dataAtual) {
-            return res.status(400).json(response(false,
-                'Não é permitido mover a vaga para uma data retroativa.'
-            ));
+            return res.status(400).json({
+                erro: 'Data inválida',
+                mensagem: 'Não é permitido mover a vaga para uma data retroativa.'
+            });
         }
         
         const vagaExistente = await VagaDisponivel.findOne({
@@ -166,6 +178,7 @@ exports.editarVagaPeloId = async (req, res) => { // atualizar vaga pelo ID
 
 exports.deletarVagaPeloId = async (req, res) => { // excluir vaga pelo ID
     try {
+        const psicologoId = req.headers['x-user-id'];
         const vaga = await VagaDisponivel.findByPk(req.params.id);
 
         if (!vaga) {
@@ -174,8 +187,15 @@ exports.deletarVagaPeloId = async (req, res) => { // excluir vaga pelo ID
                 mensagem: `Nenhuma vaga foi encontrada com o ID: ${req.params.id}`
             });
         }   
+
+        if (!psicologoId) {
+            return res.status(403).json({
+                erro: 'Acesso negado',
+                mensagem: 'ID do Psicólogo/Usuário não informado.'
+            });
+        }
         
-        if (req.usuario.id !== vaga.psicologoId) {
+        if (psicologoId !== vaga.psicologoId) {
             return res.status(403).json({
                 erro: 'Acesso negado',
                 mensagem: 'Você não possui permissão para excluir vagas de outro psicólogo.'

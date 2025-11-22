@@ -1,1 +1,0 @@
-// função de direcionamento de rotas para clínicas de atendimento

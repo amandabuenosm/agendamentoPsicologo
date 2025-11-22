@@ -1,1 +1,0 @@
-// função CRUD para clínicas de atendimento psicológico
