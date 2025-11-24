@@ -43,10 +43,9 @@ const VagaDisponivel = sequelize.define('VagaDisponivel', {
         defaultValue: 'livre',
         allowNull: false
     }
-
 }, {
-    tableName: 'vagasDisponiveis',
-    timestamps: true
+    tableName: 'vagasdisponiveis',
+    freezeTableName: true
 });
 
 // associação entre as tabelas para chaves estrangeiras

@@ -1,12 +1,12 @@
 const VagaDisponivel = require('../models/vagaDisponivelModel');
 const { Op } = require('sequelize');
 
-exports.criarVaga = async (req, res) => { // criar nova vaga disponível
+exports.criarVaga = async (req, res) => { // psicólogo logado vai criar nova vaga disponível
     try {
         const psicologoId = req.headers['x-user-id'];
         const { dataDisp, horaDisp } = req.body;
 
-        if (!psicologoId) {
+        if (!psicologoId) { // verificar se psicólogo está logado
             return res.status(403).json({
                 erro: 'Acesso negado',
                 mensagem: 'ID do Psicólogo/Usuário não informado.'
