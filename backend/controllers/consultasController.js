@@ -58,3 +58,45 @@ exports.agendarConsulta = async (req, res) => { // paciente logado vai criar nov
             erro: 'Erro interno do servidor.', mensagem: error.message });
     }
 }
+
+exports.confirmarConsulta = async (req, res) => { // psicólogo logado vai confirmar consulta
+    try {
+        const psicologoId = req.headers['x-user-id']; 
+        const { consultaId } = req.body;
+
+        if (!psicologoId) {
+            return res.status(403).json({ 
+            message: 'Acesso negado. Psicólogo não autenticado.' });
+        }
+
+        const consulta = await Consulta.findByPk(consultaId);
+        if (!consulta) {
+            return res.status(404).json({ message: 'Consulta não encontrada.' });
+        }
+
+        if (consulta.psicologoId !== psicologoId) {
+            return res.status(403).json({
+                message: 'Operação não autorizada. Esta consulta não pertence ao psicólogo autenticado.'
+            });
+        }
+
+        if (consulta.statusConsulta !== 'pendente') {
+            return res.status(400).json({
+                message: 'A consulta não está pendente e portanto não pode ser confirmada.'
+            });
+        }
+
+        await consulta.update({ statusConsulta: 'confirmada' });
+
+        return res.status(200).json({
+            message: 'Consulta confirmada com sucesso.',
+            data: consulta
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            erro: 'Erro interno do servidor.',
+            mensagem: error.message
+        });
+    }
+};
