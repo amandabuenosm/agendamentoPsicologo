@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mindcare_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update   # depois podemos mudar para validate
+    show-sql: true       # mostra as queries no console (bom pra dev)
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  # Opcional: define timezone e locale
+  jackson:
+    time-zone: America/Sao_Paulo
+    locale: pt_BR
+
+server:
+  port: 8080
